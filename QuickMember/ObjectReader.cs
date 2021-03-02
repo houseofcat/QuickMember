@@ -7,47 +7,36 @@ using System.Linq;
 
 namespace QuickMember
 {
-    /// <summary>
-    /// Provides a means of reading a sequence of objects as a data-reader, for example
-    /// for use with SqlBulkCopy or other data-base oriented code
-    /// </summary>
     public class ObjectReader : DbDataReader
     {
-        private IEnumerator source;
-        private readonly TypeAccessor accessor;
-        private readonly string[] memberNames;
-        private readonly Type[] effectiveTypes;
-        private readonly BitArray allowNull;
+        private IEnumerator _source;
+        private readonly TypeAccessor _accessor;
+        private readonly string[] _memberNames;
+        private readonly Type[] _effectiveTypes;
+        private readonly BitArray _allowNull;
 
-        /// <summary>
-        /// Creates a new ObjectReader instance for reading the supplied data
-        /// </summary>
-        /// <param name="source">The sequence of objects to represent</param>
-        /// <param name="members">The members that should be exposed to the reader</param>
+        private object _current;
+        private bool _active = true;
+
         public static ObjectReader Create<T>(IEnumerable<T> source, params string[] members)
         {
             return new ObjectReader(typeof(T), source, members);
         }
 
-        /// <summary>
-        /// Creates a new ObjectReader instance for reading the supplied data
-        /// </summary>
-        /// <param name="type">The expected Type of the information to be read</param>
-        /// <param name="source">The sequence of objects to represent</param>
-        /// <param name="members">The members that should be exposed to the reader</param>
         public ObjectReader(Type type, IEnumerable source, params string[] members)
         {
-            if (source == null) throw new ArgumentOutOfRangeException("source");
+            if (source == null) throw new ArgumentOutOfRangeException(nameof(source));
 
-            
+            var allMembers = members == null || members.Length == 0;
 
-            bool allMembers = members == null || members.Length == 0;
-
-            this.accessor = TypeAccessor.Create(type);
-            if (accessor.GetMembersSupported)
+            _accessor = TypeAccessor.Create(type);
+            if (_accessor.GetMembersSupported)
             {
                 // Sort members by ordinal first and then by name.
-                var typeMembers = this.accessor.GetMembers().OrderBy(p => p.Ordinal).ToList();
+                var typeMembers = _accessor
+                    .GetMembers()
+                    .OrderBy(p => p.Ordinal)
+                    .ToList();
 
                 if (allMembers)
                 {
@@ -58,13 +47,14 @@ namespace QuickMember
                     }
                 }
 
-                this.allowNull = new BitArray(members.Length);
-                this.effectiveTypes = new Type[members.Length];
+                _allowNull = new BitArray(members.Length);
+                _effectiveTypes = new Type[members.Length];
                 for (int i = 0; i < members.Length; i++)
                 {
                     Type memberType = null;
-                    bool allowNull = true;
-                    string hunt = members[i];
+                    var allowNull = true;
+                    var hunt = members[i];
+
                     foreach (var member in typeMembers)
                     {
                         if (member.Name == hunt)
@@ -85,8 +75,9 @@ namespace QuickMember
                             }
                         }
                     }
-                    this.allowNull[i] = allowNull;
-                    this.effectiveTypes[i] = memberType ?? typeof(object);
+
+                    _allowNull[i] = allowNull;
+                    _effectiveTypes[i] = memberType ?? typeof(object);
                 }
             }
             else if (allMembers)
@@ -94,14 +85,10 @@ namespace QuickMember
                 throw new InvalidOperationException("Member information is not available for this type; the required members must be specified explicitly");
             }
 
-            this.current = null;
-            this.memberNames = (string[])members.Clone();
-
-            this.source = source.GetEnumerator();
+            _current = null;
+            _memberNames = (string[])members.Clone();
+            _source = source.GetEnumerator();
         }
-
-        object current;
-
 
         public override int Depth
         {
@@ -111,7 +98,7 @@ namespace QuickMember
         public override DataTable GetSchemaTable()
         {
             // these are the columns used by DataTable load
-            DataTable table = new DataTable
+            var table = new DataTable
             {
                 Columns =
                 {
@@ -122,18 +109,21 @@ namespace QuickMember
                     {"AllowDBNull", typeof(bool)}
                 }
             };
-            object[] rowData = new object[5];
-            for (int i = 0; i < memberNames.Length; i++)
+
+            var rowData = new object[5];
+            for (int i = 0; i < _memberNames.Length; i++)
             {
                 rowData[0] = i;
-                rowData[1] = memberNames[i];
-                rowData[2] = effectiveTypes == null ? typeof(object) : effectiveTypes[i];
+                rowData[1] = _memberNames[i];
+                rowData[2] = _effectiveTypes == null ? typeof(object) : _effectiveTypes[i];
                 rowData[3] = -1;
-                rowData[4] = allowNull == null ? true : allowNull[i];
+                rowData[4] = _allowNull == null ? true : _allowNull[i];
                 table.Rows.Add(rowData);
             }
+
             return table;
         }
+
         public override void Close()
         {
             Shutdown();
@@ -143,31 +133,33 @@ namespace QuickMember
         {
             get
             {
-                return active;
+                return _active;
             }
         }
-        private bool active = true;
+
+
         public override bool NextResult()
         {
-            active = false;
+            _active = false;
             return false;
         }
+
         public override bool Read()
         {
-            if (active)
+            if (_active)
             {
-                var tmp = source;
+                var tmp = _source;
                 if (tmp != null && tmp.MoveNext())
                 {
-                    current = tmp.Current;
+                    _current = tmp.Current;
                     return true;
                 }
                 else
                 {
-                    active = false;
+                    _active = false;
                 }
             }
-            current = null;
+            _current = null;
             return false;
         }
 
@@ -181,24 +173,26 @@ namespace QuickMember
             base.Dispose(disposing);
             if (disposing) Shutdown();
         }
+
         private void Shutdown()
         {
-            active = false;
-            current = null;
-            var tmp = source as IDisposable;
-            source = null;
+            _active = false;
+            _current = null;
+            var tmp = _source as IDisposable;
+            _source = null;
             if (tmp != null) tmp.Dispose();
         }
 
         public override int FieldCount
         {
-            get { return memberNames.Length; }
+            get { return _memberNames.Length; }
         }
+
         public override bool IsClosed
         {
             get
             {
-                return source == null;
+                return _source == null;
             }
         }
 
@@ -214,11 +208,11 @@ namespace QuickMember
 
         public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
-            byte[] s = (byte[])this[i];
-            int available = s.Length - (int)fieldOffset;
+            var s = (byte[])this[i];
+            var available = s.Length - (int)fieldOffset;
             if (available <= 0) return 0;
 
-            int count = Math.Min(length, available);
+            var count = Math.Min(length, available);
             Buffer.BlockCopy(s, (int)fieldOffset, buffer, bufferoffset, count);
             return count;
         }
@@ -246,7 +240,7 @@ namespace QuickMember
 
         public override string GetDataTypeName(int i)
         {
-            return (effectiveTypes == null ? typeof(object) : effectiveTypes[i]).Name;
+            return (_effectiveTypes == null ? typeof(object) : _effectiveTypes[i]).Name;
         }
 
         public override DateTime GetDateTime(int i)
@@ -266,7 +260,7 @@ namespace QuickMember
 
         public override Type GetFieldType(int i)
         {
-            return effectiveTypes == null ? typeof(object) : effectiveTypes[i];
+            return _effectiveTypes == null ? typeof(object) : _effectiveTypes[i];
         }
 
         public override float GetFloat(int i)
@@ -296,12 +290,12 @@ namespace QuickMember
 
         public override string GetName(int i)
         {
-            return memberNames[i];
+            return _memberNames[i];
         }
 
         public override int GetOrdinal(string name)
         {
-            return Array.IndexOf(memberNames, name);
+            return Array.IndexOf(_memberNames, name);
         }
 
         public override string GetString(int i)
@@ -319,12 +313,14 @@ namespace QuickMember
         public override int GetValues(object[] values)
         {
             // duplicate the key fields on the stack
-            var members = this.memberNames;
-            var current = this.current;
-            var accessor = this.accessor;
+            var members = _memberNames;
+            var current = _current;
+            var accessor = _accessor;
 
-            int count = Math.Min(values.Length, members.Length);
-            for (int i = 0; i < count; i++) values[i] = accessor[current, members[i]] ?? DBNull.Value;
+            var count = Math.Min(values.Length, members.Length);
+            for (var i = 0; i < count; i++)
+            { values[i] = accessor[current, members[i]] ?? DBNull.Value; }
+
             return count;
         }
 
@@ -335,15 +331,13 @@ namespace QuickMember
 
         public override object this[string name]
         {
-            get { return accessor[current, name] ?? DBNull.Value; }
+            get { return _accessor[_current, name] ?? DBNull.Value; }
 
         }
-        /// <summary>
-        /// Gets the value of the current object in the member specified
-        /// </summary>
+
         public override object this[int i]
         {
-            get { return accessor[current, memberNames[i]] ?? DBNull.Value; }
+            get { return _accessor[_current, _memberNames[i]] ?? DBNull.Value; }
         }
     }
 }
