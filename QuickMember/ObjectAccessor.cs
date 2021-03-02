@@ -36,7 +36,7 @@ namespace QuickMember
             // IDynamicMetaObjectProvider dlr = target as IDynamicMetaObjectProvider;
             // if (dlr != null) return new DynamicWrapper(dlr); // use the DLR
 
-            if (target is IDynamicMetaObjectProvider dlr) return new DynamicWrapper(dlr);
+            if (target is IDynamicMetaObjectProvider dlr) return new DynamicAccessorWrapper(dlr);
 
             return new TypeAccessorWrapper(target, TypeAccessor.Create(target.GetType(), allowNonPublicAccessors));
         }

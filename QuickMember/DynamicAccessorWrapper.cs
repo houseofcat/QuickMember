@@ -2,7 +2,7 @@
 
 namespace QuickMember
 {
-    sealed class DynamicWrapper : ObjectAccessor
+    sealed class DynamicAccessorWrapper : ObjectAccessor
     {
         private readonly IDynamicMetaObjectProvider _target;
 
@@ -11,7 +11,7 @@ namespace QuickMember
             get { return _target; }
         }
 
-        public DynamicWrapper(IDynamicMetaObjectProvider target)
+        public DynamicAccessorWrapper(IDynamicMetaObjectProvider target)
         {
             _target = target;
         }
