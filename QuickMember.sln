@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickMember.Extensions", "Q
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickMember.Sql", "QuickMember.Sql\QuickMember.Sql.csproj", "{74229A4B-1479-4B4E-9304-91D11B9CA680}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickMember.Utils", "QuickMember.Utils\QuickMember.Utils.csproj", "{B03F6AD0-330B-4229-933E-6356BF346F3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{74229A4B-1479-4B4E-9304-91D11B9CA680}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74229A4B-1479-4B4E-9304-91D11B9CA680}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74229A4B-1479-4B4E-9304-91D11B9CA680}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B03F6AD0-330B-4229-933E-6356BF346F3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B03F6AD0-330B-4229-933E-6356BF346F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B03F6AD0-330B-4229-933E-6356BF346F3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B03F6AD0-330B-4229-933E-6356BF346F3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
