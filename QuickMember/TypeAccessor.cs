@@ -67,12 +67,13 @@ namespace QuickMember
             Type type,
             List<MemberInfo> members,
             FieldBuilder mapField,
-            bool allowNonPublicAccessors, bool isGet)
+            bool allowNonPublicAccessors,
+            bool isGet)
         {
             OpCode obj;
             OpCode index;
             OpCode value;
-            Label fail = il.DefineLabel();
+            var failLabel = il.DefineLabel();
 
             if (mapField == null)
             {
@@ -92,7 +93,7 @@ namespace QuickMember
                 il.Emit(OpCodes.Ldarg_2);
                 il.Emit(OpCodes.Ldloca_S, (byte)0);
                 il.EmitCall(OpCodes.Callvirt, _tryGetValue, null);
-                il.Emit(OpCodes.Brfalse, fail);
+                il.Emit(OpCodes.Brfalse, failLabel);
             }
 
             var labels = new Label[members.Count];
@@ -103,7 +104,7 @@ namespace QuickMember
 
             il.Emit(index);
             il.Emit(OpCodes.Switch, labels);
-            il.MarkLabel(fail);
+            il.MarkLabel(failLabel);
             il.Emit(OpCodes.Ldstr, "name");
             il.Emit(OpCodes.Newobj, typeof(ArgumentOutOfRangeException).GetConstructor(new Type[] { typeof(string) }));
             il.Emit(OpCodes.Throw);
@@ -202,7 +203,7 @@ namespace QuickMember
                     }
                 }
 
-                if (isFail) il.Emit(OpCodes.Br, fail);
+                if (isFail) il.Emit(OpCodes.Br, failLabel);
             }
         }
 
