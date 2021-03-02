@@ -1,5 +1,5 @@
-﻿using SqlKata.Compilers;
-using System;
+﻿using SqlKata;
+using SqlKata.Compilers;
 
 namespace QuickMember.Sql
 {
@@ -12,9 +12,11 @@ namespace QuickMember.Sql
             _compiler = new PostgresCompiler();
         }
 
-        public static string BuildSelect<T>(this T input, params string[] args)
+        public static string BuildSelect<T>(params object[] args)
         {
-            return string.Empty;
+            var query = new Query(typeof(T).Name.ToSnakeCase()).Select();
+
+            return _compiler.Compile(query).RawSql;
         }
     }
 }

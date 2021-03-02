@@ -3,28 +3,23 @@ using System.Linq;
 
 namespace QuickMember.Utils
 {
-    public class QuickHelpers
+    public static class QuickHelpers
     {
-        public Dictionary<string, object> GetParameters<TIn>(TIn input) where TIn : new()
+        public static Dictionary<string, object> GetParameters<TIn>(this TIn input) where TIn : new()
         {
-            var objectMemberAccessor = TypeAccessor.Create(input.GetType());
-
+            var objectMemberAccessor = TypeAccessor.Create(typeof(TIn));
             return objectMemberAccessor
                     .GetMembers()
                     .ToDictionary(x => x.Name, x => objectMemberAccessor[input, x.Name]);
         }
 
-        public Dictionary<string, object> GetReadableParameters<TIn>(TIn input) where TIn : new()
+        public static Dictionary<string, object> GetReadableParameters<TIn>(this TIn input) where TIn : new()
         {
-            var objectMemberAccessor = TypeAccessor.Create(input.GetType());
-            var propertyDictionary = new Dictionary<string, object>();
-            foreach (var member in objectMemberAccessor.GetMembers())
-            {
-                if (member.CanRead)
-                { propertyDictionary.Add(member.Name, objectMemberAccessor[input, member.Name]); }
-            }
-
-            return propertyDictionary;
+            var objectMemberAccessor = TypeAccessor.Create(typeof(TIn));
+            return objectMemberAccessor
+                    .GetMembers()
+                    .Where(x => x.CanRead)
+                    .ToDictionary(x => x.Name, x => objectMemberAccessor[input, x.Name]);
         }
     }
 }
