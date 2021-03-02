@@ -6,20 +6,20 @@ namespace QuickMember
 {
     public sealed class Member
     {
-        private readonly MemberInfo member;
+        private readonly MemberInfo _member;
+
         internal Member(MemberInfo member)
         {
-            this.member = member;
+            _member = member;
         }
-        /// <summary>
-        /// The ordinal of this member among other members.
-        /// Returns -1 in case the ordinal is not set.
-        /// </summary>
+
         public int Ordinal
         {
             get
             {
-                var ordinalAttr = member.CustomAttributes.FirstOrDefault(p => p.AttributeType == typeof(OrdinalAttribute));
+                var ordinalAttr = _member
+                    .CustomAttributes
+                    .FirstOrDefault(p => p.AttributeType == typeof(OrdinalAttribute));
 
                 if (ordinalAttr == null)
                 {
@@ -30,65 +30,50 @@ namespace QuickMember
                 return Convert.ToInt32(ordinalAttr.ConstructorArguments.Single().Value);
             }
         }
-        /// <summary>
-        /// The name of this member
-        /// </summary>
-        public string Name { get { return member.Name; } }
-        /// <summary>
-        /// The type of value stored in this member
-        /// </summary>
+
+        public string Name { get { return _member.Name; } }
+
         public Type Type
         {
             get
             {
-                if (member is FieldInfo) return ((FieldInfo)member).FieldType;
-                if (member is PropertyInfo) return ((PropertyInfo)member).PropertyType;
-                throw new NotSupportedException(member.GetType().Name);
+                if (_member is FieldInfo fieldInfo) return fieldInfo.FieldType;
+                if (_member is PropertyInfo propertyInfo) return propertyInfo.PropertyType;
+                throw new NotSupportedException(_member.GetType().Name);
             }
         }
 
-        /// <summary>
-        /// Is the attribute specified defined on this type
-        /// </summary>
         public bool IsDefined(Type attributeType)
         {
             if (attributeType == null) throw new ArgumentNullException(nameof(attributeType));
-            return Attribute.IsDefined(member, attributeType);
+            return Attribute.IsDefined(_member, attributeType);
         }
 
-        /// <summary>
-        /// Getting Attribute Type
-        /// </summary>
         public Attribute GetAttribute(Type attributeType, bool inherit)
-            => Attribute.GetCustomAttribute(member, attributeType, inherit);
+            => Attribute.GetCustomAttribute(_member, attributeType, inherit);
 
-        /// <summary>
-        /// Property Can Write
-        /// </summary>
+
         public bool CanWrite
         {
             get
             {
-                switch (member.MemberType)
+                return _member.MemberType switch
                 {
-                    case MemberTypes.Property: return ((PropertyInfo)member).CanWrite;
-                    default: throw new NotSupportedException(member.MemberType.ToString());
-                }
+                    MemberTypes.Property => ((PropertyInfo)_member).CanWrite,
+                    _ => throw new NotSupportedException(_member.MemberType.ToString()),
+                };
             }
         }
 
-        /// <summary>
-        /// Property Can Read
-        /// </summary>
         public bool CanRead
         {
             get
             {
-                switch (member.MemberType)
+                return _member.MemberType switch
                 {
-                    case MemberTypes.Property: return ((PropertyInfo)member).CanRead;
-                    default: throw new NotSupportedException(member.MemberType.ToString());
-                }
+                    MemberTypes.Property => ((PropertyInfo)_member).CanRead,
+                    _ => throw new NotSupportedException(_member.MemberType.ToString()),
+                };
             }
         }
     }
