@@ -7,7 +7,7 @@ namespace QuickMember
 {
     public sealed class MemberSet : IEnumerable<Member>, IList<Member>
     {
-        private Member[] _members;
+        private readonly Member[] _members;
 
         internal MemberSet(Type type)
         {
