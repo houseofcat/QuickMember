@@ -1,7 +1,6 @@
 ﻿using SqlKata;
 using SqlKata.Compilers;
 using System.Collections.Generic;
-using QuickMember.Extensions;
 using System.Linq;
 
 namespace QuickMember.Extensions.Sql
@@ -29,26 +28,52 @@ namespace QuickMember.Extensions.Sql
             return _compiler.Compile(query).Sql;
         }
 
-        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(this TBase input, TJoin join, string fromName, string toName, string operation) where TBase : class, new()
+        public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, TJoin secondInput, string fromName, string toName, string operation) where TBase : class, new() where TJoin : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
             var query = new Query(typeof(TBase).Name.ToSnakeCase())
                 .Select(properties.Keys.ToArray())
                 .Join(
                     typeof(TJoin).Name.ToSnakeCase(),
-                    fromName,
-                    toName,
+                    fromName.ToSnakeCase(),
+                    toName.ToSnakeCase(),
                     operation);
             return _compiler.Compile(query).Sql;
         }
 
-        public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, TJoin join, string fromName, string toName, string operation) where TBase : class, new()
+public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, string joinTo, List<string> selects, string fromName, string toName, string operation) where TBase : class, new() where TJoin : class, new()
+{
+    var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
+    var query = new Query(typeof(TBase).Name.ToSnakeCase())
+        .Select(selects.ToArray())
+        .LeftJoin(
+            joinTo.ToSnakeCase(),
+            fromName.ToSnakeCase(),
+            toName.ToSnakeCase(),
+            operation);
+    return _compiler.Compile(query).Sql;
+}
+
+        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(this TBase input, string fromName, string toName, string operation) where TBase : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
             var query = new Query(typeof(TBase).Name.ToSnakeCase())
                 .Select(properties.Keys.ToArray())
-                .Join(
+                .LeftJoin(
                     typeof(TJoin).Name.ToSnakeCase(),
+                    fromName.ToSnakeCase(),
+                    toName.ToSnakeCase(),
+                    operation);
+            return _compiler.Compile(query).Sql;
+        }
+
+        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(this TBase input, string joinTo, List<string> selects, string fromName, string toName, string operation) where TBase : class, new()
+        {
+            var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
+            var query = new Query(typeof(TBase).Name.ToSnakeCase())
+                .Select(selects.ToArray())
+                .Join(
+                    joinTo.ToSnakeCase(),
                     fromName.ToSnakeCase(),
                     toName.ToSnakeCase(),
                     operation);
@@ -71,7 +96,7 @@ namespace QuickMember.Extensions.Sql
             return _compiler.Compile(query).Sql;
         }
 
-        public static string GetSqlCrudUpdate<T>(this T input) where T    : class, new()
+        public static string GetSqlCrudUpdate<T>(this T input) where T : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
             var query = new Query(typeof(T).Name.ToSnakeCase())

@@ -15,9 +15,10 @@ namespace ConsoleApp
 
             var select2Result = testClass.GetSqlCrudSelectInnerJoin(
                 secondTestClass,
-                nameof(secondTestClass.TestId),
-                nameof(testClass.Id),
+                fromName: nameof(secondTestClass.TestId),
+                toName: nameof(testClass.Id),
                 "=");
+
             Console.WriteLine("\r\n" + select2Result);
 
             var insertResult = testClass.GetSqlCrudInsert();
