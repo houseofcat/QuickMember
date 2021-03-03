@@ -1,5 +1,6 @@
-﻿using QuickMember.Sql;
+﻿using QuickMember.Extensions.Sql;
 using System;
+using System.Collections.Generic;
 
 namespace ConsoleApp
 {
@@ -7,18 +8,47 @@ namespace ConsoleApp
     {
         public static void Main(string[] args)
         {
-            var result = PostgresQueryBuilder.BuildSelect<TestClass>();
+            var testClass = new TestClass();
+            var secondTestClass = new SecondTestClass();
+            var selectResult = testClass.GetSqlCrudSelect();
+            Console.WriteLine("\r\n" + selectResult);
 
-            Console.WriteLine(result);
+            var select2Result = testClass.GetSqlCrudSelectInnerJoin(
+                secondTestClass,
+                nameof(secondTestClass.TestId),
+                nameof(testClass.Id),
+                "=");
+            Console.WriteLine("\r\n" + select2Result);
+
+            var insertResult = testClass.GetSqlCrudInsert();
+            Console.WriteLine("\r\n" + insertResult);
+
+            var updateResult = testClass.GetSqlCrudUpdate();
+            Console.WriteLine("\r\n" + updateResult);
+
+            var deleteResult = testClass.GetSqlCrudDelete();
+            Console.WriteLine("\r\n" + deleteResult);
         }
     }
 
     public class TestClass
     {
         public int Id { get; set; }
-        public string Description { get; set; }
-        public string Data { get; set; }
-        public decimal Fraction { get; set; }
-        public float Float { get; set; }
+        public string TestDescription { get; set; }
+        public string TestData { get; set; }
+        public decimal TestFraction { get; set; }
+        public float TestFloat { get; set; }
+        public List<string> TestStrings { get; set; }
+    }
+
+    public class SecondTestClass
+    {
+        public int Id { get; set; }
+        public int TestId { get; set; }
+        public string TestDescription { get; set; }
+        public string TestData { get; set; }
+        public decimal TestFraction { get; set; }
+        public float TestFloat { get; set; }
+        public List<string> TestStrings { get; set; }
     }
 }

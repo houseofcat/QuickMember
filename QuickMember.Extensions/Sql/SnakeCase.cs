@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace QuickMember.Sql
+namespace QuickMember.Extensions.Sql
 {
     public static class Case
     {

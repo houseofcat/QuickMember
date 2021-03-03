@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\QuickMember.Sql\QuickMember.Sql.csproj" />
+    <ProjectReference Include="..\QuickMember.Extensions\QuickMember.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

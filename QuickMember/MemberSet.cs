@@ -19,7 +19,7 @@ namespace QuickMember
                 .Concat(type.GetFields(PublicInstance)
                 .Cast<MemberInfo>())
                 .OrderBy(x => x.Name)
-                .Select(member => new Member(member))
+                .Select(mi => new Member(mi))
                 .ToArray();
         }
 
