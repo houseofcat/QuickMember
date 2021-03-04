@@ -18,7 +18,6 @@ namespace ConsoleApp
                 fromName: nameof(secondTestClass.TestId),
                 toName: nameof(testClass.Id),
                 "=");
-
             Console.WriteLine("\r\n" + select2Result);
 
             var insertResult = testClass.GetSqlCrudInsert();

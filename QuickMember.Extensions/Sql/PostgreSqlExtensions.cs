@@ -28,7 +28,12 @@ namespace QuickMember.Extensions.Sql
             return _compiler.Compile(query).Sql;
         }
 
-        public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, TJoin secondInput, string fromName, string toName, string operation) where TBase : class, new() where TJoin : class, new()
+        public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(
+            this TBase input,
+            TJoin secondInput,
+            string fromName,
+            string toName,
+            string operation) where TBase : class, new() where TJoin : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
             var query = new Query(typeof(TBase).Name.ToSnakeCase())
@@ -41,20 +46,30 @@ namespace QuickMember.Extensions.Sql
             return _compiler.Compile(query).Sql;
         }
 
-public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, string joinTo, List<string> selects, string fromName, string toName, string operation) where TBase : class, new() where TJoin : class, new()
-{
-    var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
-    var query = new Query(typeof(TBase).Name.ToSnakeCase())
-        .Select(selects.ToArray())
-        .LeftJoin(
-            joinTo.ToSnakeCase(),
-            fromName.ToSnakeCase(),
-            toName.ToSnakeCase(),
-            operation);
-    return _compiler.Compile(query).Sql;
-}
+        public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(
+            this TBase input,
+            string joinTo,
+            List<string> selects,
+            string fromName,
+            string toName,
+            string operation) where TBase : class, new() where TJoin : class, new()
+        {
+            var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
+            var query = new Query(typeof(TBase).Name.ToSnakeCase())
+                .Select(selects.ToSnakeCases().ToArray())
+                .LeftJoin(
+                    joinTo.ToSnakeCase(),
+                    fromName.ToSnakeCase(),
+                    toName.ToSnakeCase(),
+                    operation);
+            return _compiler.Compile(query).Sql;
+        }
 
-        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(this TBase input, string fromName, string toName, string operation) where TBase : class, new()
+        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(
+            this TBase input,
+            string fromName,
+            string toName,
+            string operation) where TBase : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
             var query = new Query(typeof(TBase).Name.ToSnakeCase())
@@ -67,9 +82,16 @@ public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, s
             return _compiler.Compile(query).Sql;
         }
 
-        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(this TBase input, string joinTo, List<string> selects, string fromName, string toName, string operation) where TBase : class, new()
+        public static string GetSqlCrudSelectLeftJoin<TBase, TJoin>(
+            this TBase input,
+            string joinTo,
+            List<string> selects,
+            string fromName,
+            string toName,
+            string operation) where TBase : class, new()
         {
             var properties = input.GetNonEnumerableProperties(_globalNameExclusion, SnakeNameConversion);
+            selects.ToSnakeCases();
             var query = new Query(typeof(TBase).Name.ToSnakeCase())
                 .Select(selects.ToArray())
                 .Join(
@@ -113,23 +135,22 @@ public static string GetSqlCrudSelectInnerJoin<TBase, TJoin>(this TBase input, s
             return _compiler.Compile(query).Sql;
         }
 
-        public static int GetIntId<T>(this T input) where T : new()
+        public static int GetIntId<T>(this T input) where T : class, new()
         {
             var objectMemberAccessor = TypeAccessor.Create(typeof(T));
             return (int)objectMemberAccessor[input, ID_KEY];
         }
 
-        public static long GetLongId<T>(this T input) where T : new()
+        public static long GetLongId<T>(this T input) where T : class, new()
         {
             var objectMemberAccessor = TypeAccessor.Create(typeof(T));
             return (long)objectMemberAccessor[input, ID_KEY];
         }
 
-        public static string GetStringId<T>(this T input) where T : new()
+        public static string GetStringId<T>(this T input) where T : class, new()
         {
             var objectMemberAccessor = TypeAccessor.Create(typeof(T));
             return (string)objectMemberAccessor[input, ID_KEY];
         }
-
     }
 }
